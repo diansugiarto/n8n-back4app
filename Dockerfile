@@ -1,6 +1,16 @@
-FROM docker.n8n.io/n8nio/n8n:latest
+FROM node:22-alpine
 
 USER root
+
+RUN apk add --no-cache \
+    tini \
+    tzdata \
+    libc6-compat
+
+RUN npm install -g n8n@2.35.7
+
+RUN mkdir -p /home/node/.n8n && \
+    chown -R node:node /home/node
 
 ENV N8N_PORT=8080
 ENV N8N_LISTEN_ADDRESS=0.0.0.0
@@ -11,6 +21,10 @@ ENV NODE_ENV=production
 
 USER node
 
+WORKDIR /home/node
+
 EXPOSE 8080
 
-CMD ["start"]
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["n8n"]
